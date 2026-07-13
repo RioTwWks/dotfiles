@@ -1,0 +1,69 @@
+add_newline = true
+
+format = """
+$username\
+$hostname\
+$directory\
+$git_branch\
+$git_status\
+$python\
+$golang\
+$nodejs\
+$docker_context\
+$kubernetes\
+$terraform\
+$cmd_duration\
+$line_break\
+$character
+"""
+
+[directory]
+style = "bold cyan"
+truncation_length = 3
+truncate_to_repo = true
+
+[git_branch]
+symbol = " "
+style = "bold purple"
+
+[git_status]
+style = "bold red"
+
+[python]
+symbol = " "
+style = "yellow"
+
+[golang]
+symbol = " "
+style = "cyan"
+
+[nodejs]
+symbol = " "
+style = "green"
+
+[docker_context]
+symbol = " "
+style = "blue"
+
+[kubernetes]
+disabled = false
+symbol = "☸ "
+style = "bold blue"
+
+[terraform]
+symbol = "󱁢 "
+style = "magenta"
+
+[cmd_duration]
+min_time = 500
+format = "took [$duration](yellow) "
+
+[character]
+success_symbol = "[❯](bold green)"
+error_symbol = "[❯](bold red)"
+
+[username]
+show_always = false
+
+[hostname]
+ssh_only = true

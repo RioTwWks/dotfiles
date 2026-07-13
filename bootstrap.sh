@@ -1,20 +1,24 @@
 #!/usr/bin/env bash
 # EndeavourOS workstation bootstrap — idempotent, modular installers.
 
-set -uo pipefail
+set -Eeuo pipefail
 
 ROOT="$(cd "$(dirname "$0")" && pwd)"
 FAILED=0
 
+BLUE="\033[1;34m"
+GREEN="\033[1;32m"
+RED="\033[1;31m"
+RESET="\033[0m"
+
 run() {
   local title="$1"
   shift
-  echo
-  echo "==> $title"
+  printf "\n${BLUE}==>${RESET} %s\n" "$title"
   if "$@"; then
-    echo "    ✓ done"
+    printf "    ${GREEN}✓ done${RESET}\n"
   else
-    echo "    ✗ failed"
+    printf "    ${RED}✗ failed${RESET}\n"
     FAILED=$((FAILED + 1))
   fi
 }
@@ -26,6 +30,9 @@ echo "Root: $ROOT"
 
 run "Installing packages" \
   "$ROOT/install/packages.sh"
+
+run "Enabling system services" \
+  "$ROOT/install/services.sh"
 
 run "Configuring shell + links" \
   "$ROOT/install/shell.sh"
@@ -53,9 +60,9 @@ run "Configuring Snapper recovery" \
 
 echo
 if ((FAILED == 0)); then
-  echo "Bootstrap completed successfully."
+  printf "${GREEN}Bootstrap completed successfully.${RESET}\n"
 else
-  echo "Bootstrap finished with $FAILED failed step(s)."
+  printf "${RED}Bootstrap finished with %s failed step(s).${RESET}\n" "$FAILED"
 fi
 echo "Doctor:  $ROOT/scripts/doctor.sh"
 echo "Update:  $ROOT/scripts/update.sh"

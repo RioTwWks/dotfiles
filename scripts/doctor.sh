@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Workstation doctor: recovery stack + toolchain health in one place.
+# Workstation doctor: full health-check after bootstrap / recovery.
 
 set -euo pipefail
 
@@ -23,25 +23,26 @@ check_cmd() {
     return
   fi
   case "$cmd" in
-    docker)    version=$(docker --version 2>/dev/null | awk '{print $3}' | tr -d ',') ;;
-    git)       version=$(git --version | awk '{print $3}') ;;
-    ghostty)   version=$(ghostty --version 2>/dev/null | head -1 | awk '{print $2}') ;;
-    fastfetch) version=$(fastfetch --version 2>/dev/null | head -1 | awk '{print $2}') ;;
-    starship)  version=$(starship --version 2>/dev/null | head -1 | awk '{print $2}') ;;
-    cursor)    version=$(cursor --version 2>/dev/null | head -1 | awk '{print $1}') ;;
+    docker)    version=$(docker --version 2>/dev/null | awk '{print $3; exit}' | tr -d ',') ;;
+    git)       version=$(git --version 2>/dev/null | awk '{print $3; exit}') ;;
+    yay)       version=$(yay --version 2>/dev/null | awk '/^yay /{print $2; exit}') ;;
+    ghostty)   version=$(ghostty --version 2>/dev/null | awk '{print $2; exit}') ;;
+    fastfetch) version=$(fastfetch --version 2>/dev/null | awk '{print $2; exit}') ;;
+    starship)  version=$(starship --version 2>/dev/null | awk '{print $2; exit}') ;;
+    cursor)    version=$(cursor --version 2>/dev/null | awk '{print $1; exit}') ;;
     python|python3)
-      version=$(python --version 2>/dev/null | awk '{print $2}' || python3 --version 2>/dev/null | awk '{print $2}')
+      version=$(python --version 2>/dev/null | awk '{print $2; exit}' || python3 --version 2>/dev/null | awk '{print $2; exit}')
       ;;
-    go)        version=$(go version 2>/dev/null | awk '{print $3}' | sed 's/go//') ;;
-    terraform) version=$(terraform version 2>/dev/null | head -1 | awk '{print $2}' | sed 's/^v//') ;;
-    kubectl)   version=$(kubectl version --client=true 2>/dev/null | head -1 | awk '{print $3}') ;;
+    go)        version=$(go version 2>/dev/null | awk '{print $3; exit}' | sed 's/go//') ;;
+    terraform) version=$(terraform version 2>/dev/null | awk 'NR==1{print $2; exit}' | sed 's/^v//') ;;
+    kubectl)   version=$(kubectl version --client=true 2>/dev/null | awk 'NR==1{print $3; exit}') ;;
     helm)      version=$(helm version --short 2>/dev/null | sed 's/^v//' | cut -d+ -f1) ;;
     ansible)
-      version=$(ANSIBLE_LOCAL_TEMP=/tmp ansible --version 2>/dev/null | head -1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' || true)
+      version=$(ANSIBLE_LOCAL_TEMP=/tmp ansible --version 2>/dev/null | awk 'NR==1{print; exit}' | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' || true)
       ;;
-    uv)        version=$(uv --version 2>/dev/null | awk '{print $2}') ;;
+    uv)        version=$(uv --version 2>/dev/null | awk '{print $2; exit}') ;;
     node)      version=$(node --version 2>/dev/null | sed 's/^v//') ;;
-    gh)        version=$(gh --version 2>/dev/null | head -1 | awk '{print $3}') ;;
+    gh)        version=$(gh --version 2>/dev/null | awk 'NR==1{print $3; exit}') ;;
     *)         version="ok" ;;
   esac
   if [[ -n "$version" ]]; then
@@ -73,29 +74,24 @@ else
   bad "/.snapshots"
 fi
 
-if [[ -f /etc/snapper/configs/root ]] || \
-   (have_cmd snapper && snapper list-configs 2>/dev/null | awk 'NR>2 {print $1}' | grep -qx root); then
+if [[ -f /etc/snapper/configs/root ]]; then
   count=$( { snapper -c root list 2>/dev/null || true; } | awk 'NR>2' | wc -l | tr -d '[:space:]')
   if [[ -z "$count" || "$count" == "0" ]]; then
     count=$(find /.snapshots -mindepth 1 -maxdepth 1 -type d 2>/dev/null | wc -l | tr -d '[:space:]' || true)
   fi
   [[ -z "$count" ]] && count="?"
-  ok "Snapper root  ($count snapshots)"
+  ok "Snapper config  root ($count snapshots)"
 else
-  bad "Snapper"
+  bad "Snapper config"
 fi
 
-if [[ -f /etc/snapper/configs/home ]]; then
-  ok "Snapper home"
-fi
+[[ -f /etc/snapper/configs/home ]] && ok "Snapper config  home"
 
-for pkg in snap-pac grub-btrfs btrfs-assistant; do
-  if pacman -Q "$pkg" >/dev/null 2>&1; then
-    ok "$pkg  $(pacman -Q "$pkg" | awk '{print $2}')"
-  else
-    bad "$pkg"
-  fi
-done
+if pacman -Q grub-btrfs >/dev/null 2>&1; then
+  ok "grub-btrfs  $(pacman -Q grub-btrfs | awk '{print $2}')"
+else
+  bad "grub-btrfs"
+fi
 
 check_unit snapper-timeline.timer
 check_unit snapper-cleanup.timer
@@ -103,17 +99,44 @@ check_unit grub-btrfsd.service
 
 echo
 echo "──────── Workstation ────────"
-check_cmd Docker docker
+check_cmd yay yay
+
+if have_cmd docker; then
+  check_cmd Docker docker
+  if systemctl is-active --quiet docker 2>/dev/null; then
+    ok "Docker daemon  active"
+  else
+    bad "Docker daemon"
+  fi
+  target_user="${SUDO_USER:-$USER}"
+  if id -nG "$target_user" 2>/dev/null | tr ' ' '\n' | grep -qx docker; then
+    ok "Docker group  $target_user"
+  else
+    warn "Docker group  $target_user not in docker (re-login after usermod)"
+  fi
+else
+  bad "Docker"
+fi
+
 check_cmd Git git
 check_cmd Ghostty ghostty
 check_cmd Fastfetch fastfetch
 check_cmd Starship starship
 check_cmd Cursor cursor
 
-if [[ -d "$HOME/.ssh" ]] && compgen -G "$HOME/.ssh/*.pub" >/dev/null; then
-  ok "SSH  keys present"
+if [[ "${SHELL:-}" == */zsh ]]; then
+  ok "zsh default shell  $SHELL"
 else
-  bad "SSH"
+  warn "zsh default shell  current=$SHELL (chsh -s /usr/bin/zsh)"
+fi
+
+if [[ -d "$HOME/.ssh" ]] && compgen -G "$HOME/.ssh/*.pub" >/dev/null; then
+  ok "Git SSH  keys present"
+  if [[ -f "$HOME/.ssh/config" ]] || [[ -f "$HOME/.ssh/id_ed25519" ]] || [[ -f "$HOME/.ssh/id_rsa" ]]; then
+    ok "Git SSH  identity files"
+  fi
+else
+  bad "Git SSH"
 fi
 
 if have_cmd gpg && gpg --list-secret-keys --keyid-format LONG 2>/dev/null | grep -q '^sec'; then
@@ -124,12 +147,19 @@ fi
 
 if have_cmd gh; then
   if gh auth status >/dev/null 2>&1; then
-    ok "GitHub  gh authenticated"
+    ok "GitHub auth  logged in"
   else
-    warn "GitHub  gh installed, not logged in (gh auth login)"
+    warn "GitHub auth  run: gh auth login"
   fi
 else
-  bad "GitHub"
+  bad "GitHub auth  (install github-cli)"
+fi
+
+if [[ -f "$HOME/.config/Cursor/User/settings.json" ]] || \
+   [[ -L "$HOME/.config/Cursor/User/settings.json" ]]; then
+  ok "Cursor settings"
+else
+  warn "Cursor settings  missing (install/cursor.sh)"
 fi
 
 echo

@@ -1,17 +1,14 @@
 # EndeavourOS Workstation Bootstrap
 
-Воспроизводимая рабочая станция DevOps/DevSecOps на **EndeavourOS + Btrfs**:
-пакеты, configs, Snapper-recovery, Docker, Cursor, Ghostty — одной командой после чистой установки.
-
-> Это уже не классические «dotfiles», а **Workstation Bootstrap**.
-> Локальный путь пока `~/dotfiles`; при желании репозиторий можно переименовать в `workstation` / `endeavouros-bootstrap`.
+> **Bootstrap воспроизводимой рабочей станции DevOps** на EndeavourOS + Btrfs.
+> Не классические dotfiles: одна команда после чистой установки → практически идентичная машина.
 
 ## Requirements
 
-- Чистая установка **EndeavourOS** (рекомендуется KDE Plasma)
-- Файловая система **Btrfs** (`@`, `@home`, …)
-- Сеть + `yay` (идёт с EndeavourOS)
-- Timeshift **не** нужен — только Snapper
+- Чистая установка **EndeavourOS** (KDE Plasma)
+- **Btrfs** (`@`, `@home`, …)
+- Сеть + `yay`
+- Timeshift не используем — только **Snapper**
 
 ## Installation
 
@@ -21,9 +18,7 @@ cd ~/dotfiles
 ./bootstrap.sh
 ```
 
-Затем logout/reboot (docker group, zsh login shell).
-
-Проверка:
+Logout/reboot (docker group, zsh). Затем:
 
 ```bash
 ./scripts/doctor.sh
@@ -35,7 +30,8 @@ cd ~/dotfiles
 ./scripts/update.sh
 ```
 
-`snap-pac` автоматически делает pre/post снимки root перед операциями `pacman`.
+Обновляет (если утилита есть): `pacman`, `yay -Sua`, `flatpak`, `rustup`, `mise`, `npm -g`, `flutter`.  
+`snap-pac` делает pre/post снимки root при операциях pacman.
 
 ## Recovery
 
@@ -43,54 +39,47 @@ cd ~/dotfiles
 |-----------|------|
 | Snapper | снимки `@` / `@home` |
 | snap-pac | pre/post при обновлениях |
-| grub-btrfs | загрузка в снимок из GRUB |
+| grub-btrfs | boot в снимок из GRUB |
 | btrfs-assistant | GUI отката |
 | btrfs scrub | проверка целостности |
 
 ```bash
-./install/snapper.sh     # настроить / починить стек
-./scripts/doctor.sh      # статус
+./install/snapper.sh
+./scripts/doctor.sh
 ```
 
-Откат после плохого обновления:
-
-1. GRUB → submenu **snapshots** → boot
-2. или **Btrfs Assistant** → restore
+Откат: GRUB → **snapshots** или Btrfs Assistant.
 
 ## Packages
 
-Списки в `packages/`:
-
 | Файл | Назначение |
 |------|------------|
-| `pacman.txt` | официальные репозитории |
-| `aur.txt` | AUR (`yay`) |
+| `pacman.txt` | официальные пакеты |
+| `aur.txt` | AUR |
 | `flatpak.txt` | Flatpak |
+| `fonts.txt` | шрифты |
+| `services.txt` | systemd units (`enable --now`) |
 | `cursor-extensions.txt` | расширения Cursor |
-
-Установка пакетов: `./install/packages.sh`  
-Расширения Cursor: `./install/cursor.sh`
 
 ## Customization
 
-Конфиги линкуются из `configs/`:
-
 ```
 configs/
-  fastfetch/config.jsonc
-  ghostty/config          # Catppuccin Mocha
-  git/.gitconfig
-  starship/starship.toml
-  zsh/.zshrc
+  cursor/     settings.json, keybindings.json
+  docker/     daemon.json
+  fastfetch/
+  ghostty/
+  git/
+  kde/        (placeholder)
+  starship/
+  zsh/
 ```
 
-Правь файлы в репозитории — симлинки уже указывают сюда (`./install/shell.sh`).
-
-Модули установки: `install/*.sh` (docker, fonts, kde, snapper, …).
+Правки — в репозитории; `install/shell.sh` и `install/cursor.sh` ставят симлинки.
 
 ## Screenshots
 
-Положи скриншоты в `assets/screenshots/` и добавь сюда:
+Файлы в `assets/screenshots/`:
 
 ```markdown
 ![desktop](assets/screenshots/desktop.png)
@@ -99,20 +88,12 @@ configs/
 ## Structure
 
 ```
-bootstrap.sh              # оркестратор (run + continue on error)
-packages/                 # декларативные списки
-install/                  # модули установки
-  packages.sh
-  shell.sh
-  fonts.sh
-  ghostty.sh
-  docker.sh
-  cursor.sh
-  devtools.sh
-  kde.sh
-  snapper.sh
+bootstrap.sh              # цветной run(), continue-on-error
+packages/                 # pacman, aur, flatpak, fonts, services, cursor-ext
+install/                  # packages, services, shell, fonts, ghostty,
+                          # docker, cursor, devtools, kde, snapper
 scripts/
-  doctor.sh               # единый health-check
+  doctor.sh
   update.sh
 configs/
 assets/
@@ -120,7 +101,7 @@ assets/
 
 ## Roadmap
 
-1. ✅ Snapper + rollback
-2. ✅ Модульный bootstrap + doctor
-3. ⏳ Экспорт Plasma в `configs/kde/`
+1. ✅ Snapper + rollback  
+2. ✅ Модульный bootstrap + doctor + services/fonts  
+3. ⏳ Экспорт Plasma → `configs/kde/`  
 4. ⏳ Homelab restore (GitLab, Proxy Manager, …)

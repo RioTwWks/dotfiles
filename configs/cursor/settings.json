@@ -1,0 +1,12 @@
+{
+    "window.autoDetectColorScheme": true,
+    "editor.fontFamily": "'JetBrainsMono Nerd Font', 'Droid Sans Mono', 'monospace'",
+    "editor.fontSize": 14,
+    "editor.fontLigatures": true,
+    "terminal.integrated.fontFamily": "'JetBrainsMono Nerd Font'",
+    "workbench.colorTheme": "Default Dark Modern",
+    "files.autoSave": "afterDelay",
+    "editor.formatOnSave": true,
+    "git.autofetch": true,
+    "telemetry.telemetryLevel": "off"
+}

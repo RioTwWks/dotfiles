@@ -1,0 +1,5 @@
+# systemd units to enable --now (install/services.sh)
+docker.service
+bluetooth.service
+reflector.timer
+fstrim.timer

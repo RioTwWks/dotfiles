@@ -11,10 +11,6 @@ eza
 zoxide
 fzf
 
-# Fonts
-ttf-jetbrains-mono-nerd
-noto-fonts-emoji
-
 # Containers
 docker
 docker-compose
@@ -35,3 +31,6 @@ snapper
 snap-pac
 grub-btrfs
 btrfs-assistant
+
+# Mirrorlist / SSD helpers used by packages/services.txt
+reflector

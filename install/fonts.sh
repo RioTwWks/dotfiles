@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
-# Nerd Fonts + emoji for terminal / Plasma.
+# Install fonts from packages/fonts.txt
 
 set -euo pipefail
 
-sudo pacman -S --needed --noconfirm \
-  ttf-jetbrains-mono-nerd \
-  noto-fonts-emoji
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+LIST="$ROOT/packages/fonts.txt"
+
+mapfile -t fonts < <(grep -vE '^\s*(#|$)' "$LIST" || true)
+if ((${#fonts[@]})); then
+  sudo pacman -S --needed --noconfirm "${fonts[@]}"
+fi
 
 echo "Set JetBrainsMono Nerd Font in System Settings → Fonts (size 10–11)."

@@ -1,21 +1,63 @@
 #!/usr/bin/env bash
+# EndeavourOS workstation bootstrap — idempotent, modular installers.
 
-set -euo pipefail
+set -uo pipefail
 
 ROOT="$(cd "$(dirname "$0")" && pwd)"
+FAILED=0
+
+run() {
+  local title="$1"
+  shift
+  echo
+  echo "==> $title"
+  if "$@"; then
+    echo "    ✓ done"
+  else
+    echo "    ✗ failed"
+    FAILED=$((FAILED + 1))
+  fi
+}
 
 echo "=============================="
-echo " EndeavourOS Bootstrap"
+echo " EndeavourOS Workstation"
 echo "=============================="
+echo "Root: $ROOT"
 
-"$ROOT/scripts/install-packages.sh"
-"$ROOT/scripts/configure-shell.sh"
-"$ROOT/scripts/configure-kde.sh"
-"$ROOT/scripts/configure-devops.sh"
-"$ROOT/install/snapper.sh"
-"$ROOT/scripts/symlink.sh"
+run "Installing packages" \
+  "$ROOT/install/packages.sh"
+
+run "Configuring shell + links" \
+  "$ROOT/install/shell.sh"
+
+run "Installing fonts" \
+  "$ROOT/install/fonts.sh"
+
+run "Installing Ghostty" \
+  "$ROOT/install/ghostty.sh"
+
+run "Installing Docker" \
+  "$ROOT/install/docker.sh"
+
+run "Installing Cursor + extensions" \
+  "$ROOT/install/cursor.sh"
+
+run "Installing DevOps tools" \
+  "$ROOT/install/devtools.sh"
+
+run "Configuring KDE" \
+  "$ROOT/install/kde.sh"
+
+run "Configuring Snapper recovery" \
+  "$ROOT/install/snapper.sh"
 
 echo
-echo "Bootstrap completed."
-echo "Recovery doctor: $ROOT/scripts/versions.sh"
+if ((FAILED == 0)); then
+  echo "Bootstrap completed successfully."
+else
+  echo "Bootstrap finished with $FAILED failed step(s)."
+fi
+echo "Doctor:  $ROOT/scripts/doctor.sh"
+echo "Update:  $ROOT/scripts/update.sh"
 echo "Please logout or reboot."
+exit "$FAILED"

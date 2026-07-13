@@ -1,1 +1,2 @@
-# AUR packages (one per line). Leave empty if unused.
+# AUR packages (one per line)
+cursor-bin

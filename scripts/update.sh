@@ -23,10 +23,6 @@ fi
 sudo pacman -Syu --noconfirm
 
 if command -v yay >/dev/null 2>&1; then
-  mapfile -t aur_pkgs < <(grep -vE '^\s*(#|$)' "$ROOT/packages/aur.txt" 2>/dev/null || true)
-  if ((${#aur_pkgs[@]})); then
-    yay -S --needed --noconfirm "${aur_pkgs[@]}"
-  fi
   yay -Syu --noconfirm
 fi
 
@@ -43,4 +39,4 @@ fi
 echo
 printf "${green}Update finished.${reset}\n"
 echo "List snapshots: snapper -c root list"
-echo "Health check:   $ROOT/scripts/versions.sh"
+echo "Health check:   $ROOT/scripts/doctor.sh"

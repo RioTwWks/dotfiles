@@ -1,0 +1,11 @@
+[user]
+	name = RioTwWks
+	email = ozrkrakodil@gmail.com
+[credential]
+	helper = store
+[init]
+	defaultBranch = main
+[pull]
+	rebase = true
+[core]
+	editor = cursor --wait

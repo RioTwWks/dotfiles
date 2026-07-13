@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# Install packages from packages/{pacman,aur,flatpak}.txt
 
 set -euo pipefail
 
@@ -14,7 +15,7 @@ fi
 
 if ((${#aur_pkgs[@]})); then
   if ! command -v yay >/dev/null 2>&1; then
-    echo "yay not found; skip AUR packages: ${aur_pkgs[*]}"
+    echo "yay not found; skip AUR: ${aur_pkgs[*]}"
   else
     yay -S --needed --noconfirm "${aur_pkgs[@]}"
   fi
@@ -24,6 +25,7 @@ if ((${#flatpak_pkgs[@]})); then
   if ! command -v flatpak >/dev/null 2>&1; then
     echo "flatpak not found; skip: ${flatpak_pkgs[*]}"
   else
+    flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo || true
     flatpak install -y "${flatpak_pkgs[@]}"
   fi
 fi

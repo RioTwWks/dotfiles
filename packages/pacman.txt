@@ -1,11 +1,35 @@
-# Core
+# Core shell & UX
 base-devel
 git
 zsh
+zsh-autosuggestions
+zsh-syntax-highlighting
 starship
 fastfetch
+ghostty
+eza
+zoxide
+fzf
 
-# Btrfs self-recovery stack
+# Fonts
+ttf-jetbrains-mono-nerd
+noto-fonts-emoji
+
+# Containers
+docker
+docker-compose
+
+# DevOps (also installable via install/devtools.sh)
+go
+nodejs
+python
+terraform
+ansible
+kubectl
+helm
+github-cli
+
+# Btrfs self-recovery
 btrfs-progs
 snapper
 snap-pac

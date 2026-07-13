@@ -59,7 +59,7 @@
     },
     {
       "type": "custom",
-      "format": "doctor      ➜ ~/dotfiles/scripts/versions.sh"
+      "format": "doctor      ➜ ~/dotfiles/scripts/doctor.sh"
     },
     {
       "type": "custom",

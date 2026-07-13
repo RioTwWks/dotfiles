@@ -1,0 +1,13 @@
+# Core
+base-devel
+git
+zsh
+starship
+fastfetch
+
+# Btrfs self-recovery stack
+btrfs-progs
+snapper
+snap-pac
+grub-btrfs
+btrfs-assistant

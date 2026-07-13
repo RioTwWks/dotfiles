@@ -1,0 +1,1 @@
+# Flatpak apps (one per line). Leave empty if unused.

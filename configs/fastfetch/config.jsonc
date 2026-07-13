@@ -59,11 +59,15 @@
     },
     {
       "type": "custom",
-      "format": "doctor      ➜ ~/dotfiles/scripts/devtools.sh"
+      "format": "doctor      ➜ ~/dotfiles/scripts/versions.sh"
     },
     {
       "type": "custom",
-      "format": "update      ➜ sudo pacman -Syu"
+      "format": "update      ➜ ~/dotfiles/scripts/update.sh"
+    },
+    {
+      "type": "custom",
+      "format": "recovery    ➜ ~/dotfiles/install/snapper.sh"
     },
     {
       "type": "custom",

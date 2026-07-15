@@ -21,6 +21,12 @@ cd ~/dotfiles
 Logout/reboot (docker group, zsh). Затем:
 
 ```bash
+# задать BORG_PASSPHRASE
+$EDITOR ~/.config/dotfiles/backup.env
+
+# первый полный бэкап (засевает репозиторий)
+./scripts/backup.sh init
+
 ./scripts/doctor.sh
 ```
 
@@ -31,9 +37,10 @@ Logout/reboot (docker group, zsh). Затем:
 ```
 
 Обновляет (если утилита есть): `pacman`, `yay -Sua`, `flatpak`, `rustup`, `mise`, `npm -g`, `flutter`.  
+После обновления — инкрементальный Borg-бэкап.  
 `snap-pac` делает pre/post снимки root при операциях pacman.
 
-## Recovery
+## Recovery (быстрый откат)
 
 | Компонент | Роль |
 |-----------|------|
@@ -50,6 +57,39 @@ Logout/reboot (docker group, zsh). Затем:
 
 Откат: GRUB → **snapshots** или Btrfs Assistant.
 
+## Backup (инкрементальный)
+
+[Borg](https://www.borgbackup.org/) хранит архивы в одном репозитории: первый `init` — полный seed, каждый следующий `create` добавляет **только изменённые чанки**.
+
+| Триггер | Действие |
+|---------|----------|
+| `backup.sh init` | создать репо + первый полный архив |
+| `backup.sh create` | ручной инкремент |
+| pacman hook | после Install/Upgrade/Remove (с debounce 1ч) |
+| daily timer | автоматический инкремент |
+| `update.sh` | инкремент после обновления системы |
+| weekly prune | retention: daily/weekly/monthly |
+
+```bash
+./install/backup.sh          # borg + timer + pacman hook
+$EDITOR ~/.config/dotfiles/backup.env
+./scripts/backup.sh init     # первый полный
+./scripts/backup.sh create   # дальше — только дельта
+./scripts/backup.sh list
+./scripts/backup.sh prune
+```
+
+Конфиг: `configs/backup/` → `~/.config/dotfiles/backup.env`  
+Исключения: `configs/backup/excludes.txt`  
+По умолчанию бэкапятся `$HOME` и `/etc` (пути в `BACKUP_PATHS`).
+
+Восстановление файла/каталога:
+
+```bash
+borg list
+borg extract ::ARCHIVE-NAME home/ivan/path/to/file
+```
+
 ## Packages
 
 | Файл | Назначение |
@@ -65,6 +105,7 @@ Logout/reboot (docker group, zsh). Затем:
 
 ```
 configs/
+  backup/     backup.env.example, excludes.txt
   cursor/     settings.json, keybindings.json
   docker/     daemon.json
   fastfetch/
@@ -74,8 +115,6 @@ configs/
   starship/
   zsh/
 ```
-
-Правки — в репозитории; `install/shell.sh` и `install/cursor.sh` ставят симлинки.
 
 ## Screenshots
 
@@ -88,13 +127,13 @@ configs/
 ## Structure
 
 ```
-bootstrap.sh              # цветной run(), continue-on-error
-packages/                 # pacman, aur, flatpak, fonts, services, cursor-ext
-install/                  # packages, services, shell, fonts, ghostty,
-                          # docker, cursor, devtools, kde, snapper
+bootstrap.sh
+packages/
+install/          # … snapper.sh, backup.sh
 scripts/
   doctor.sh
   update.sh
+  backup.sh       # init | create | list | prune | check
 configs/
 assets/
 ```
@@ -103,5 +142,6 @@ assets/
 
 1. ✅ Snapper + rollback  
 2. ✅ Модульный bootstrap + doctor + services/fonts  
-3. ⏳ Экспорт Plasma → `configs/kde/`  
-4. ⏳ Homelab restore (GitLab, Proxy Manager, …)
+3. ✅ Инкрементальный Borg backup (init → create → hook/timer)  
+4. ⏳ Экспорт Plasma → `configs/kde/`  
+5. ⏳ Homelab restore (GitLab, Proxy Manager, …)

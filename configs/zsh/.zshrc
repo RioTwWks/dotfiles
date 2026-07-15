@@ -32,3 +32,4 @@ fi
 
 alias doctor='~/dotfiles/scripts/doctor.sh'
 alias update-system='~/dotfiles/scripts/update.sh'
+alias backup='~/dotfiles/scripts/backup.sh'

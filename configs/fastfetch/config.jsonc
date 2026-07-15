@@ -67,6 +67,10 @@
     },
     {
       "type": "custom",
+      "format": "backup      ➜ ~/dotfiles/scripts/backup.sh"
+    },
+    {
+      "type": "custom",
       "format": "recovery    ➜ ~/dotfiles/install/snapper.sh"
     },
     {

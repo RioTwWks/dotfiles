@@ -32,5 +32,8 @@ snap-pac
 grub-btrfs
 btrfs-assistant
 
+# Incremental backups (deduplicating archives)
+borg
+
 # Mirrorlist / SSD helpers used by packages/services.txt
 reflector

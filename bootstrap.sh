@@ -58,6 +58,9 @@ run "Configuring KDE" \
 run "Configuring Snapper recovery" \
   "$ROOT/install/snapper.sh"
 
+run "Configuring incremental backups (Borg)" \
+  "$ROOT/install/backup.sh"
+
 echo
 if ((FAILED == 0)); then
   printf "${GREEN}Bootstrap completed successfully.${RESET}\n"
@@ -66,5 +69,6 @@ else
 fi
 echo "Doctor:  $ROOT/scripts/doctor.sh"
 echo "Update:  $ROOT/scripts/update.sh"
+echo "Backup:  $ROOT/scripts/backup.sh init   # first full, then auto-increment"
 echo "Please logout or reboot."
 exit "$FAILED"

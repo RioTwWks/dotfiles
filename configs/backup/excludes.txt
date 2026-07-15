@@ -1,0 +1,30 @@
+# Patterns excluded from Borg backups (one per line, shell-style / fnmatch)
+# See: borg help patterns
+
+.sh
+*/.cache
+*/.local/share/Trash
+*/.npm
+*/.cargo/registry
+*/.rustup
+*/go/pkg
+*/.thumbnails
+*/node_modules
+*/.venv
+*/venv
+*/__pycache__
+*.iso
+*.img
+*/lost+found
+*/.snapshots
+*/Steam
+*/.steam
+*/.local/share/Steam
+*/.config/Cursor/Cache
+*/.config/Cursor/CachedData
+*/.config/Code/Cache
+*/.config/Code/CachedData
+*/.mozilla/firefox/*/cache2
+*/Downloads/*.zip
+*/Downloads/*.tar*
+*/Downloads/*.7z

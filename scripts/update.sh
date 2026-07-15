@@ -50,7 +50,13 @@ elif [[ -d /boot/grub ]]; then
   sudo grub-mkconfig -o /boot/grub/grub.cfg
 fi
 
+if [[ -x "$ROOT/scripts/backup.sh" ]] && [[ -f "${DOTFILES_BACKUP_ENV:-$HOME/.config/dotfiles/backup.env}" ]]; then
+  step "Incremental Borg backup"
+  "$ROOT/scripts/backup.sh" create update || true
+fi
+
 echo
 printf "${green}Update finished.${reset}\n"
 echo "List snapshots: snapper -c root list"
+echo "List backups:   $ROOT/scripts/backup.sh list"
 echo "Health check:   $ROOT/scripts/doctor.sh"

@@ -98,6 +98,46 @@ check_unit snapper-cleanup.timer
 check_unit grub-btrfsd.service
 
 echo
+echo "──────── Backup (Borg) ────────"
+ENV_FILE="${DOTFILES_BACKUP_ENV:-$HOME/.config/dotfiles/backup.env}"
+if have_cmd borg; then
+  ok "borg  $(borg --version 2>/dev/null | awk '{print $2; exit}')"
+else
+  bad "borg"
+fi
+
+if [[ -f "$ENV_FILE" ]]; then
+  ok "backup.env  $ENV_FILE"
+  # shellcheck disable=SC1090
+  set -a
+  # shellcheck source=/dev/null
+  source "$ENV_FILE" 2>/dev/null || true
+  set +a
+  if [[ -n "${BACKUP_REPO:-}" ]] && borg info "${BACKUP_REPO}" >/dev/null 2>&1; then
+    archives=$(borg list "${BACKUP_REPO}" 2>/dev/null | wc -l | tr -d '[:space:]' || echo 0)
+    ok "Borg repo  $BACKUP_REPO ($archives archives)"
+  elif [[ -n "${BACKUP_REPO:-}" ]]; then
+    warn "Borg repo  not initialized — run scripts/backup.sh init"
+  else
+    warn "Borg repo  BACKUP_REPO empty in env"
+  fi
+else
+  warn "backup.env  missing (install/backup.sh)"
+fi
+
+if systemctl --user is-enabled --quiet dotfiles-backup.timer 2>/dev/null; then
+  ok "dotfiles-backup.timer"
+else
+  warn "dotfiles-backup.timer  not enabled"
+fi
+
+if [[ -f /etc/pacman.d/hooks/99-dotfiles-backup.hook ]]; then
+  ok "pacman backup hook"
+else
+  warn "pacman backup hook  missing"
+fi
+
+echo
 echo "──────── Workstation ────────"
 check_cmd yay yay
 
@@ -179,5 +219,6 @@ check_cmd uv uv
 
 echo
 echo "Setup:   $ROOT/install/snapper.sh"
+echo "Backup:  $ROOT/scripts/backup.sh"
 echo "Update:  $ROOT/scripts/update.sh"
 echo "Boot:    $ROOT/bootstrap.sh"
